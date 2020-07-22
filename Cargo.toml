@@ -17,6 +17,8 @@ features = [
   'Document',
   'Element',
   'HtmlCanvasElement',
+  'HtmlOptionElement',
+  'CssStyleDeclaration',
   'Window',
   'ImageData'
 ]

@@ -136,3 +136,38 @@ fn valid_pink_is_hex_ffc0cb() {
 fn invalid_rust_is_hex_000000() {
     assert_eq!(colour_name_to_hex("rust"), Ok(String::from("000000")))
 }
+
+#[wasm_bindgen_test]
+fn valid_fff_is_valid_colour() {
+    assert!(is_valid_colour("fff"))
+}
+
+#[wasm_bindgen_test]
+fn valid_000000_is_valid_colour() {
+    assert!(is_valid_colour("000000"))
+}
+
+#[wasm_bindgen_test]
+fn valid_336699_is_valid_colour() {
+    assert!(is_valid_colour("336699"))
+}
+
+#[wasm_bindgen_test]
+fn valid_yellow_is_valid_colour() {
+    assert!(is_valid_colour("yellow"))
+}
+
+#[wasm_bindgen_test]
+fn valid_black_is_valid_colour() {
+    assert!(is_valid_colour("black"))
+}
+
+#[wasm_bindgen_test]
+fn invalid_5fs_is_not_valid_colour() {
+    assert!(!is_valid_colour("5fs"))
+}
+
+#[wasm_bindgen_test]
+fn invalid_rust_is_not_valid_colour() {
+    assert!(!is_valid_colour("rust"))
+}

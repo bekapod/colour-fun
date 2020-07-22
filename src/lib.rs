@@ -126,27 +126,43 @@ pub fn colour_name_to_hex(colour: &str) -> Result<String, JsValue> {
     }
 }
 
+#[wasm_bindgen]
+pub fn is_valid_colour(color: &str) -> bool {
+    let is_hex = is_valid_hex(color);
+    let is_name = is_valid_colour_name(color);
+
+    match is_name {
+        Ok(is_name_value) => is_hex | is_name_value,
+        Err(_) => is_hex,
+    }
+}
+
 fn hex_pair_to_int(a: char, b: char) -> Result<u8, std::num::ParseIntError> {
     u8::from_str_radix(&format!("{}{}", a, b), 16)
 }
 
+fn is_valid_colour_name(colour: &str) -> Result<bool, JsValue> {
+    let o = web_sys::HtmlOptionElement::new()?;
+    let s = o.style();
+    s.set_property("color", colour)?;
+
+    println!("{:?}", s.get_property_value("color"));
+
+    Ok(s.get_property_value("color")? == colour)
+}
+
 fn colour_name_to_rgb(colour: &str) -> Result<RgbColour, JsValue> {
     let document = web_sys::window().unwrap().document().unwrap();
-    let canvas = document.create_element("canvas").unwrap();
-    let canvas: web_sys::HtmlCanvasElement = canvas
-        .dyn_into::<web_sys::HtmlCanvasElement>()
-        .map_err(|_| ())
-        .unwrap();
+    let canvas = document.create_element("canvas")?;
+    let canvas: web_sys::HtmlCanvasElement = canvas.dyn_into::<web_sys::HtmlCanvasElement>()?;
 
     canvas.set_height(1);
     canvas.set_width(1);
 
     let context = canvas
-        .get_context("2d")
+        .get_context("2d")?
         .unwrap()
-        .unwrap()
-        .dyn_into::<web_sys::CanvasRenderingContext2d>()
-        .unwrap();
+        .dyn_into::<web_sys::CanvasRenderingContext2d>()?;
 
     context.set_fill_style(&JsValue::from(colour));
     context.fill_rect(0.0, 0.0, 1.0, 1.0);
