@@ -187,3 +187,37 @@ fn invalid_5fs_is_not_valid_colour() {
 fn invalid_rust_is_not_valid_colour() {
     assert!(!is_valid_colour("rust"))
 }
+
+#[wasm_bindgen_test]
+fn reddish_rgb_to_hsl() {
+    assert_eq!(
+        RgbColour::new(244, 43, 32).to_hsl(),
+        Ok(HslColour::new(3, 90.5983, 54.11765))
+    )
+}
+
+#[wasm_bindgen_test]
+fn rebeccapurple_rgb_to_hsl() {
+    assert_eq!(
+        RgbColour::from_colour_name("rebeccapurple")
+            .unwrap()
+            .to_hsl(),
+        Ok(HslColour::new(270, 50.000008, 40.0))
+    )
+}
+
+#[wasm_bindgen_test]
+fn white_rgb_to_hsl() {
+    assert_eq!(
+        RgbColour::new(255, 255, 255).to_hsl(),
+        Ok(HslColour::new(0, 0.0, 100.0))
+    )
+}
+
+#[wasm_bindgen_test]
+fn black_rgb_to_hsl() {
+    assert_eq!(
+        RgbColour::new(0, 0, 0).to_hsl(),
+        Ok(HslColour::new(0, 0.0, 0.0))
+    )
+}

@@ -1,5 +1,6 @@
 mod utils;
 
+use std::convert::TryInto;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 
@@ -15,6 +16,7 @@ pub enum ErrorCode {
     InvalidHexLength(usize),
     InvalidColourName(String),
     CanvasError,
+    HslConversionError(String),
 }
 
 impl std::convert::From<ErrorCode> for JsValue {
@@ -35,6 +37,27 @@ impl std::convert::From<ErrorCode> for JsValue {
             ErrorCode::CanvasError => {
                 JsValue::from_str("Canvas: error occurred while getting image data from canvas")
             }
+            ErrorCode::HslConversionError(rgb) => {
+                JsValue::from_str(&format!("HSL: could not convert {} to HSL format", rgb))
+            }
+        }
+    }
+}
+
+#[wasm_bindgen]
+#[derive(Debug, PartialEq)]
+pub struct HslColour {
+    hue: u32,
+    saturation: f32,
+    lightness: f32,
+}
+
+impl HslColour {
+    pub fn new(hue: u32, saturation: f32, lightness: f32) -> HslColour {
+        HslColour {
+            hue,
+            saturation,
+            lightness,
         }
     }
 }
@@ -88,7 +111,7 @@ impl RgbColour {
     }
 
     pub fn from_colour_name(colour: &str) -> Result<RgbColour, JsValue> {
-        if !is_valid_colour_name(colour).is_ok() | !is_valid_colour_name(colour).unwrap() {
+        if is_valid_colour_name(colour).is_err() | !is_valid_colour_name(colour).unwrap() {
             return Err(JsValue::from(ErrorCode::InvalidColourName(
                 colour.to_string(),
             )));
@@ -130,6 +153,70 @@ impl RgbColour {
 
     pub fn to_hex(&self) -> String {
         format!("{:02x}{:02x}{:02x}", self.red, self.green, self.blue)
+    }
+
+    pub fn to_hsl(&self) -> Result<HslColour, JsValue> {
+        let red = self.red as f32 / 255.0;
+        let green = self.green as f32 / 255.0;
+        let blue = self.blue as f32 / 255.0;
+        let mut ordered = [red, green, blue];
+        ordered.sort_by(|a, b| a.partial_cmp(b).unwrap());
+
+        let min = ordered[0];
+        let max = ordered[2];
+        let delta = max - min;
+
+        let h: f32;
+        let hue: Result<u32, std::num::TryFromIntError>;
+
+        let mut lightness: f32 = (max + min) / 2.0;
+        let mut saturation: f32;
+
+        match delta {
+            val if val == 0.0 => {
+                h = 0.0;
+                saturation = 0.0;
+            }
+            val => {
+                saturation = val / (1.0 - (2.0 * lightness - 1.0).abs());
+
+                match max {
+                    val if (val - red).abs() < 0.001 => {
+                        h = ((green - blue) / delta) % 6.0;
+                    }
+                    val if (val - green).abs() < 0.001 => {
+                        h = (blue - red) / delta + 2.0;
+                    }
+                    _ => {
+                        h = (red - green) / delta + 4.0;
+                    }
+                }
+            }
+        }
+
+        saturation = (saturation * 100.0).abs();
+        lightness = (lightness * 100.0).abs();
+
+        match (h * 60.0).round() as i16 {
+            val if val < 0 => {
+                hue = (val + 360).try_into();
+            }
+            val => {
+                hue = val.try_into();
+            }
+        }
+
+        match hue {
+            Ok(hue) => Ok(HslColour {
+                hue,
+                saturation,
+                lightness,
+            }),
+            Err(_) => Err(JsValue::from(ErrorCode::HslConversionError(format!(
+                "{:?}",
+                self
+            )))),
+        }
     }
 }
 
