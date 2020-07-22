@@ -40,6 +40,20 @@ impl std::convert::From<ErrorCode> for JsValue {
     }
 }
 
+pub enum ContrastingColour {
+    Black,
+    White,
+}
+
+impl std::convert::From<ContrastingColour> for JsValue {
+    fn from(colour: ContrastingColour) -> JsValue {
+        match colour {
+            ContrastingColour::Black => JsValue::from_str("black"),
+            ContrastingColour::White => JsValue::from_str("white"),
+        }
+    }
+}
+
 #[wasm_bindgen]
 pub fn hex_to_rgb(hex: &str) -> Result<RgbColour, JsValue> {
     match hex.len() {
@@ -69,8 +83,17 @@ pub fn hex_to_rgb(hex: &str) -> Result<RgbColour, JsValue> {
 }
 
 #[wasm_bindgen]
-pub fn greet() {
-    alert("Hello, colour-fun!");
+pub fn get_contrasting_color_for_hex(hex: &str) -> Result<JsValue, JsValue> {
+    match hex_to_rgb(hex) {
+        Ok(RgbColour { red, green, blue }) => {
+            let yiq: u32 = (red as u32 * 299 + green as u32 * 587 + blue as u32 * 114) / 1000;
+            match yiq {
+                yiq if yiq >= 128 => Ok(JsValue::from(ContrastingColour::Black)),
+                _ => Ok(JsValue::from(ContrastingColour::White)),
+            }
+        }
+        Err(error) => Err(error),
+    }
 }
 
 fn hex_str_to_int(a: char, b: char) -> Result<u8, std::num::ParseIntError> {
