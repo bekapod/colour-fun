@@ -221,3 +221,37 @@ fn black_rgb_to_hsl() {
         Ok(HslColour::new(0, 0.0, 0.0))
     )
 }
+
+#[wasm_bindgen_test]
+fn reddish_rgb_to_lab() {
+    assert_eq!(
+        RgbColour::new(244, 43, 32).to_lab(),
+        Ok(LabColour::new(53.020706, 72.232544, 55.97896))
+    )
+}
+
+#[wasm_bindgen_test]
+fn rebeccapurple_rgb_to_lab() {
+    assert_eq!(
+        RgbColour::from_colour_name("rebeccapurple")
+            .unwrap()
+            .to_lab(),
+        Ok(LabColour::new(32.902435, 42.89223, -47.156937))
+    )
+}
+
+#[wasm_bindgen_test]
+fn white_rgb_to_lab() {
+    assert_eq!(
+        RgbColour::new(255, 255, 255).to_lab(),
+        Ok(LabColour::new(100.0, 0.0052452087, -0.010418892))
+    )
+}
+
+#[wasm_bindgen_test]
+fn black_rgb_to_lab() {
+    assert_eq!(
+        RgbColour::new(0, 0, 0).to_lab(),
+        Ok(LabColour::new(0.0, 0.0, 0.0))
+    )
+}

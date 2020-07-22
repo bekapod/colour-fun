@@ -63,6 +63,20 @@ impl HslColour {
 }
 
 #[wasm_bindgen]
+#[derive(Debug, PartialEq)]
+pub struct LabColour {
+    lightness: f32,
+    a: f32,
+    b: f32,
+}
+
+impl LabColour {
+    pub fn new(lightness: f32, a: f32, b: f32) -> LabColour {
+        LabColour { lightness, a, b }
+    }
+}
+
+#[wasm_bindgen]
 #[derive(Debug, PartialEq, Eq)]
 pub struct RgbColour {
     red: u8,
@@ -217,6 +231,38 @@ impl RgbColour {
                 self
             )))),
         }
+    }
+
+    pub fn to_lab(&self) -> Result<LabColour, JsValue> {
+        fn do_weird_thing(val: f32) -> f32 {
+            if val > 0.04045 {
+                ((val + 0.055) / 1.055).powf(2.4)
+            } else {
+                val / 12.92
+            }
+        }
+
+        fn do_other_weird_thing(val: f32) -> f32 {
+            if val > 0.008856 {
+                val.powf(1.0 / 3.0)
+            } else {
+                7.787 * val + 16.0 / 116.0
+            }
+        }
+
+        let red = do_weird_thing(self.red as f32 / 255.0);
+        let green = do_weird_thing(self.green as f32 / 255.0);
+        let blue = do_weird_thing(self.blue as f32 / 255.0);
+
+        let x = do_other_weird_thing((red * 0.4124 + green * 0.3576 + blue * 0.1805) / 0.95047);
+        let y = do_other_weird_thing((red * 0.2126 + green * 0.7152 + blue * 0.0722) / 1.0);
+        let z = do_other_weird_thing((red * 0.0193 + green * 0.1192 + blue * 0.9505) / 1.08883);
+
+        Ok(LabColour {
+            lightness: 116.0 * y - 16.0,
+            a: 500.0 * (x - y),
+            b: 200.0 * (y - z),
+        })
     }
 }
 
