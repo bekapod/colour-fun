@@ -46,6 +46,25 @@ fn invalid_length_hex_to_rgb() {
 }
 
 #[wasm_bindgen_test]
-fn pass() {
-    assert_eq!(1 + 1, 2);
+fn dark_hex_code_contrasting_colour() {
+    assert_eq!(
+        get_contrasting_color_for_hex("054"),
+        Ok(JsValue::from(ContrastingColour::White))
+    )
+}
+
+#[wasm_bindgen_test]
+fn light_hex_code_contrasting_colour() {
+    assert_eq!(
+        get_contrasting_color_for_hex("f54"),
+        Ok(JsValue::from(ContrastingColour::Black))
+    )
+}
+
+#[wasm_bindgen_test]
+fn invalid_hex_code_contrasting_colour() {
+    assert_eq!(
+        get_contrasting_color_for_hex("vds"),
+        Err(JsValue::from(ErrorCode::InvalidHexCharacter))
+    )
 }
