@@ -7,7 +7,7 @@ use colour_fun::*;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_test::*;
 
-// wasm_bindgen_test_configure!(run_in_browser);
+wasm_bindgen_test_configure!(run_in_browser);
 
 #[wasm_bindgen_test]
 fn six_char_hex_to_rgb_white() {
@@ -107,4 +107,32 @@ fn six_char_invalid_hex_with_prefix_is_invalid() {
 #[wasm_bindgen_test]
 fn invalid_hex_is_invalid() {
     assert!(!is_valid_hex("fdsfdsfrtre"))
+}
+
+#[wasm_bindgen_test]
+fn valid_white_is_hex_ffffff() {
+    assert_eq!(colour_name_to_hex("white"), Ok(String::from("ffffff")))
+}
+
+#[wasm_bindgen_test]
+fn valid_rebeccapurple_is_hex_663399() {
+    assert_eq!(
+        colour_name_to_hex("rebeccapurple"),
+        Ok(String::from("663399"))
+    )
+}
+
+#[wasm_bindgen_test]
+fn valid_yellow_is_hex_ffff00() {
+    assert_eq!(colour_name_to_hex("yellow"), Ok(String::from("ffff00")))
+}
+
+#[wasm_bindgen_test]
+fn valid_pink_is_hex_ffc0cb() {
+    assert_eq!(colour_name_to_hex("pink"), Ok(String::from("ffc0cb")))
+}
+
+#[wasm_bindgen_test]
+fn invalid_rust_is_hex_000000() {
+    assert_eq!(colour_name_to_hex("rust"), Ok(String::from("000000")))
 }

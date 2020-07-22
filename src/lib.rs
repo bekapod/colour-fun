@@ -1,6 +1,7 @@
 mod utils;
 
 use wasm_bindgen::prelude::*;
+use wasm_bindgen::JsCast;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
@@ -22,9 +23,11 @@ impl RgbColour {
     }
 }
 
+#[derive(Debug)]
 pub enum ErrorCode {
     InvalidHexCharacter,
     InvalidHexLength,
+    CanvasError,
 }
 
 impl std::convert::From<ErrorCode> for JsValue {
@@ -36,10 +39,14 @@ impl std::convert::From<ErrorCode> for JsValue {
             ErrorCode::InvalidHexLength => {
                 JsValue::from_str("Invalid: hex code has invalid length (must be 3 or 6)")
             }
+            ErrorCode::CanvasError => {
+                JsValue::from_str("Canvas: error occurred while getting image data from canvas")
+            }
         }
     }
 }
 
+#[derive(Debug)]
 pub enum ContrastingColour {
     Black,
     White,
@@ -109,6 +116,53 @@ pub fn is_valid_hex(hex: &str) -> bool {
     u32::from_str_radix(hex, 16).is_ok()
 }
 
+#[wasm_bindgen]
+pub fn colour_name_to_hex(colour: &str) -> Result<String, JsValue> {
+    let rgb = colour_name_to_rgb(colour);
+
+    match rgb {
+        Ok(RgbColour { red, green, blue }) => Ok(format!("{:02x}{:02x}{:02x}", red, green, blue)),
+        Err(error) => Err(error),
+    }
+}
+
 fn hex_pair_to_int(a: char, b: char) -> Result<u8, std::num::ParseIntError> {
     u8::from_str_radix(&format!("{}{}", a, b), 16)
+}
+
+fn colour_name_to_rgb(colour: &str) -> Result<RgbColour, JsValue> {
+    let document = web_sys::window().unwrap().document().unwrap();
+    let canvas = document.create_element("canvas").unwrap();
+    let canvas: web_sys::HtmlCanvasElement = canvas
+        .dyn_into::<web_sys::HtmlCanvasElement>()
+        .map_err(|_| ())
+        .unwrap();
+
+    canvas.set_height(1);
+    canvas.set_width(1);
+
+    let context = canvas
+        .get_context("2d")
+        .unwrap()
+        .unwrap()
+        .dyn_into::<web_sys::CanvasRenderingContext2d>()
+        .unwrap();
+
+    context.set_fill_style(&JsValue::from(colour));
+    context.fill_rect(0.0, 0.0, 1.0, 1.0);
+
+    let data = context.get_image_data(0.0, 0.0, 1.0, 1.0);
+
+    match data {
+        Ok(data) => {
+            let data = data.data();
+
+            Ok(RgbColour {
+                red: data[0],
+                green: data[1],
+                blue: data[2],
+            })
+        }
+        Err(_) => Err(JsValue::from(ErrorCode::CanvasError)),
+    }
 }
