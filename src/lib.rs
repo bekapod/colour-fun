@@ -69,9 +69,9 @@ pub fn hex_to_rgb(hex: &str) -> Result<RgbColour, JsValue> {
         6 => {
             let chars: Vec<char> = hex.chars().collect();
             let parsed = (
-                hex_str_to_int(chars[0], chars[1]),
-                hex_str_to_int(chars[2], chars[3]),
-                hex_str_to_int(chars[4], chars[5]),
+                hex_pair_to_int(chars[0], chars[1]),
+                hex_pair_to_int(chars[2], chars[3]),
+                hex_pair_to_int(chars[4], chars[5]),
             );
             match parsed {
                 (Ok(red), Ok(green), Ok(blue)) => Ok(RgbColour { red, green, blue }),
@@ -96,6 +96,19 @@ pub fn get_contrasting_color_for_hex(hex: &str) -> Result<JsValue, JsValue> {
     }
 }
 
-fn hex_str_to_int(a: char, b: char) -> Result<u8, std::num::ParseIntError> {
+#[wasm_bindgen]
+pub fn is_valid_hex(hex: &str) -> bool {
+    if hex.is_empty() {
+        return false;
+    }
+
+    if hex.starts_with('#') {
+        return is_valid_hex(&hex[1..]);
+    }
+
+    u32::from_str_radix(hex, 16).is_ok()
+}
+
+fn hex_pair_to_int(a: char, b: char) -> Result<u8, std::num::ParseIntError> {
     u8::from_str_radix(&format!("{}{}", a, b), 16)
 }

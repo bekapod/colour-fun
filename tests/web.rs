@@ -54,7 +54,7 @@ fn dark_hex_code_contrasting_colour() {
 }
 
 #[wasm_bindgen_test]
-fn light_hex_code_contrasting_colour() {
+fn light_hex_code_contrasting_colour_is_black() {
     assert_eq!(
         get_contrasting_color_for_hex("f54"),
         Ok(JsValue::from(ContrastingColour::Black))
@@ -62,9 +62,49 @@ fn light_hex_code_contrasting_colour() {
 }
 
 #[wasm_bindgen_test]
-fn invalid_hex_code_contrasting_colour() {
+fn invalid_hex_code_contrasting_colour_is_white() {
     assert_eq!(
         get_contrasting_color_for_hex("vds"),
         Err(JsValue::from(ErrorCode::InvalidHexCharacter))
     )
+}
+
+#[wasm_bindgen_test]
+fn six_char_valid_hex_is_valid() {
+    assert!(is_valid_hex("d3d09f"))
+}
+
+#[wasm_bindgen_test]
+fn three_char_valid_hex_is_valid() {
+    assert!(is_valid_hex("fea"))
+}
+
+#[wasm_bindgen_test]
+fn six_char_valid_hex_with_prefix_is_valid() {
+    assert!(is_valid_hex("#f34a23"))
+}
+
+#[wasm_bindgen_test]
+fn three_char_valid_hex_with_prefix_is_valid() {
+    assert!(is_valid_hex("#a4d"))
+}
+
+#[wasm_bindgen_test]
+fn three_char_invalid_hex_is_invalid() {
+    assert!(!is_valid_hex("dkl"))
+}
+
+#[wasm_bindgen_test]
+fn three_char_invalid_hex_with_prefix_is_invalid() {
+    assert!(!is_valid_hex("#9x2"))
+}
+
+#[wasm_bindgen_test]
+fn six_char_invalid_hex_with_prefix_is_invalid() {
+    assert!(!is_valid_hex("#9x2444"))
+}
+
+#[wasm_bindgen_test]
+fn invalid_hex_is_invalid() {
+    assert!(!is_valid_hex("fdsfdsfrtre"))
 }
