@@ -1,113 +1,14 @@
 //! Test suite for the Web and headless browsers.
+//! These are generally tests that use canvas / dom API's to get colour objects from css colour names.
 
 #![cfg(target_arch = "wasm32")]
 
 extern crate wasm_bindgen_test;
-use colour_fun::*;
-use wasm_bindgen::prelude::*;
+use colour_fun::colour::*;
+use colour_fun::error_code::*;
 use wasm_bindgen_test::*;
 
 wasm_bindgen_test_configure!(run_in_browser);
-
-#[wasm_bindgen_test]
-fn six_char_hex_to_rgb_white() {
-    assert_eq!(
-        RgbColour::from_hex("FFFFFF"),
-        Ok(RgbColour::new(255, 255, 255))
-    );
-}
-
-#[wasm_bindgen_test]
-fn six_char_hex_to_rgb_pink() {
-    assert_eq!(
-        RgbColour::from_hex("F43C8E"),
-        Ok(RgbColour::new(244, 60, 142))
-    );
-}
-
-#[wasm_bindgen_test]
-fn three_char_hex_to_rgb_black() {
-    assert_eq!(RgbColour::from_hex("000"), Ok(RgbColour::new(0, 0, 0)));
-}
-
-#[wasm_bindgen_test]
-fn three_char_hex_to_rgb_pink() {
-    assert_eq!(RgbColour::from_hex("d15"), Ok(RgbColour::new(221, 17, 85)));
-}
-
-#[wasm_bindgen_test]
-fn invalid_char_hex_to_rgb() {
-    assert_eq!(
-        RgbColour::from_hex("F43C8X"),
-        Err(JsValue::from(ErrorCode::InvalidHexCharacter(
-            "F43C8X".to_string()
-        )))
-    );
-}
-
-#[wasm_bindgen_test]
-fn invalid_length_hex_to_rgb() {
-    assert_eq!(
-        RgbColour::from_hex("F43C"),
-        Err(JsValue::from(ErrorCode::InvalidHexLength(4)))
-    );
-}
-
-#[wasm_bindgen_test]
-fn dark_hex_code_contrasting_colour_is_white() {
-    assert_eq!(
-        RgbColour::from_hex("054").unwrap().get_contrasting_colour(),
-        RgbColour::new(255, 255, 255)
-    )
-}
-
-#[wasm_bindgen_test]
-fn light_hex_code_contrasting_colour_is_black() {
-    assert_eq!(
-        RgbColour::from_hex("f54").unwrap().get_contrasting_colour(),
-        RgbColour::new(0, 0, 0)
-    )
-}
-
-#[wasm_bindgen_test]
-fn six_char_valid_hex_is_valid() {
-    assert!(is_valid_hex("d3d09f"))
-}
-
-#[wasm_bindgen_test]
-fn three_char_valid_hex_is_valid() {
-    assert!(is_valid_hex("fea"))
-}
-
-#[wasm_bindgen_test]
-fn six_char_valid_hex_with_prefix_is_valid() {
-    assert!(is_valid_hex("#f34a23"))
-}
-
-#[wasm_bindgen_test]
-fn three_char_valid_hex_with_prefix_is_valid() {
-    assert!(is_valid_hex("#a4d"))
-}
-
-#[wasm_bindgen_test]
-fn three_char_invalid_hex_is_invalid() {
-    assert!(!is_valid_hex("dkl"))
-}
-
-#[wasm_bindgen_test]
-fn three_char_invalid_hex_with_prefix_is_invalid() {
-    assert!(!is_valid_hex("#9x2"))
-}
-
-#[wasm_bindgen_test]
-fn six_char_invalid_hex_with_prefix_is_invalid() {
-    assert!(!is_valid_hex("#9x2444"))
-}
-
-#[wasm_bindgen_test]
-fn invalid_hex_is_invalid() {
-    assert!(!is_valid_hex("fdsfdsfrtre"))
-}
 
 #[wasm_bindgen_test]
 fn valid_white_is_hex_ffffff() {
@@ -147,7 +48,7 @@ fn valid_pink_is_hex_ffc0cb() {
 fn invalid_rust_is_hex_invalid() {
     assert_eq!(
         RgbColour::from_colour_name("rust"),
-        Err(JsValue::from(ErrorCode::InvalidColourName(
+        Err(String::from(ErrorCode::InvalidColourName(
             "rust".to_string()
         )))
     )
@@ -186,120 +87,4 @@ fn invalid_5fs_is_not_valid_colour() {
 #[wasm_bindgen_test]
 fn invalid_rust_is_not_valid_colour() {
     assert!(!is_valid_colour("rust"))
-}
-
-#[wasm_bindgen_test]
-fn reddish_rgb_to_hsl() {
-    assert_eq!(
-        RgbColour::new(244, 43, 32).to_hsl(),
-        Ok(HslColour::new(3, 90.5983, 54.11765))
-    )
-}
-
-#[wasm_bindgen_test]
-fn rebeccapurple_rgb_to_hsl() {
-    assert_eq!(
-        RgbColour::from_colour_name("rebeccapurple")
-            .unwrap()
-            .to_hsl(),
-        Ok(HslColour::new(270, 50.000008, 40.0))
-    )
-}
-
-#[wasm_bindgen_test]
-fn white_rgb_to_hsl() {
-    assert_eq!(
-        RgbColour::new(255, 255, 255).to_hsl(),
-        Ok(HslColour::new(0, 0.0, 100.0))
-    )
-}
-
-#[wasm_bindgen_test]
-fn black_rgb_to_hsl() {
-    assert_eq!(
-        RgbColour::new(0, 0, 0).to_hsl(),
-        Ok(HslColour::new(0, 0.0, 0.0))
-    )
-}
-
-#[wasm_bindgen_test]
-fn reddish_rgb_to_lab() {
-    assert_eq!(
-        RgbColour::new(244, 43, 32).to_lab(),
-        Ok(LabColour::new(53.020706, 72.232544, 55.97896))
-    )
-}
-
-#[wasm_bindgen_test]
-fn rebeccapurple_rgb_to_lab() {
-    assert_eq!(
-        RgbColour::from_colour_name("rebeccapurple")
-            .unwrap()
-            .to_lab(),
-        Ok(LabColour::new(32.902435, 42.89223, -47.156937))
-    )
-}
-
-#[wasm_bindgen_test]
-fn white_rgb_to_lab() {
-    assert_eq!(
-        RgbColour::new(255, 255, 255).to_lab(),
-        Ok(LabColour::new(100.0, 0.0052452087, -0.010418892))
-    )
-}
-
-#[wasm_bindgen_test]
-fn black_rgb_to_lab() {
-    assert_eq!(
-        RgbColour::new(0, 0, 0).to_lab(),
-        Ok(LabColour::new(0.0, 0.0, 0.0))
-    )
-}
-
-#[wasm_bindgen_test]
-fn rgb_distance_1() {
-    assert_eq!(
-        Comparison::new(RgbColour::new(3, 43, 234), RgbColour::new(43, 54, 231)).rgb(),
-        ComparisonResult(41.59327, 90)
-    )
-}
-
-#[wasm_bindgen_test]
-fn rgb_distance_2() {
-    assert_eq!(
-        Comparison::new(RgbColour::new(65, 123, 165), RgbColour::new(87, 87, 65)).rgb(),
-        ComparisonResult(108.535706, 75)
-    )
-}
-
-#[wasm_bindgen_test]
-fn hsl_distance_1() {
-    assert_eq!(
-        Comparison::new(RgbColour::new(3, 43, 234), RgbColour::new(43, 54, 231)).hsl(),
-        ComparisonResult(20.142855, 79)
-    )
-}
-
-#[wasm_bindgen_test]
-fn hsl_distance_2() {
-    assert_eq!(
-        Comparison::new(RgbColour::new(65, 123, 165), RgbColour::new(87, 87, 65)).hsl(),
-        ComparisonResult(148.66129, -49)
-    )
-}
-
-#[wasm_bindgen_test]
-fn lab_distance_1() {
-    assert_eq!(
-        Comparison::new(RgbColour::new(3, 43, 234), RgbColour::new(43, 54, 231)).lab(),
-        ComparisonResult(2.8480887, 97)
-    )
-}
-
-#[wasm_bindgen_test]
-fn lab_distance_2() {
-    assert_eq!(
-        Comparison::new(RgbColour::new(65, 123, 165), RgbColour::new(87, 87, 65)).lab(),
-        ComparisonResult(30.377132, 69)
-    )
 }
