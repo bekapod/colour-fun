@@ -255,3 +255,51 @@ fn black_rgb_to_lab() {
         Ok(LabColour::new(0.0, 0.0, 0.0))
     )
 }
+
+#[wasm_bindgen_test]
+fn rgb_distance_1() {
+    assert_eq!(
+        Comparison::new(RgbColour::new(3, 43, 234), RgbColour::new(43, 54, 231)).rgb(),
+        ComparisonResult(41.59327, 90)
+    )
+}
+
+#[wasm_bindgen_test]
+fn rgb_distance_2() {
+    assert_eq!(
+        Comparison::new(RgbColour::new(65, 123, 165), RgbColour::new(87, 87, 65)).rgb(),
+        ComparisonResult(108.535706, 75)
+    )
+}
+
+#[wasm_bindgen_test]
+fn hsl_distance_1() {
+    assert_eq!(
+        Comparison::new(RgbColour::new(3, 43, 234), RgbColour::new(43, 54, 231)).hsl(),
+        ComparisonResult(20.142855, 79)
+    )
+}
+
+#[wasm_bindgen_test]
+fn hsl_distance_2() {
+    assert_eq!(
+        Comparison::new(RgbColour::new(65, 123, 165), RgbColour::new(87, 87, 65)).hsl(),
+        ComparisonResult(148.66129, -49)
+    )
+}
+
+#[wasm_bindgen_test]
+fn lab_distance_1() {
+    assert_eq!(
+        Comparison::new(RgbColour::new(3, 43, 234), RgbColour::new(43, 54, 231)).lab(),
+        ComparisonResult(2.8480887, 97)
+    )
+}
+
+#[wasm_bindgen_test]
+fn lab_distance_2() {
+    assert_eq!(
+        Comparison::new(RgbColour::new(65, 123, 165), RgbColour::new(87, 87, 65)).lab(),
+        ComparisonResult(30.377132, 69)
+    )
+}
