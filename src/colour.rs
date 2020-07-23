@@ -16,6 +16,16 @@ impl std::convert::From<HslColour> for (f32, f32, f32) {
   }
 }
 
+impl std::convert::From<RgbColour> for HslColour {
+  fn from(colour: RgbColour) -> Self {
+    colour.to_hsl().unwrap_or(HslColour {
+      hue: 0,
+      saturation: 0.0,
+      lightness: 0.0,
+    })
+  }
+}
+
 #[derive(Debug, PartialEq)]
 pub struct LabColour {
   lightness: f32,
@@ -26,6 +36,16 @@ pub struct LabColour {
 impl std::convert::From<LabColour> for (f32, f32, f32) {
   fn from(colour: LabColour) -> Self {
     (colour.lightness as f32, colour.a as f32, colour.b as f32)
+  }
+}
+
+impl std::convert::From<RgbColour> for LabColour {
+  fn from(colour: RgbColour) -> Self {
+    colour.to_lab().unwrap_or(LabColour {
+      lightness: 0.0,
+      a: 0.0,
+      b: 0.0,
+    })
   }
 }
 
@@ -376,63 +396,60 @@ mod tests {
     #[test]
     fn reddish() {
       assert_eq!(
-        RgbColour {
+        HslColour::from(RgbColour {
           red: 244,
           green: 43,
           blue: 32
-        }
-        .to_hsl(),
-        Ok(HslColour {
+        }),
+        HslColour {
           hue: 3,
           saturation: 90.5983,
           lightness: 54.11765
-        })
+        }
       )
     }
 
     #[test]
     fn rebeccapurple() {
       assert_eq!(
-        RgbColour::from_hex("663399").unwrap().to_hsl(),
-        Ok(HslColour {
+        HslColour::from(RgbColour::from_hex("663399").unwrap()),
+        HslColour {
           hue: 270,
           saturation: 50.000008,
           lightness: 40.0
-        })
+        }
       )
     }
 
     #[test]
     fn white() {
       assert_eq!(
-        RgbColour {
+        HslColour::from(RgbColour {
           red: 255,
           green: 255,
           blue: 255
-        }
-        .to_hsl(),
-        Ok(HslColour {
+        }),
+        HslColour {
           hue: 0,
           saturation: 0.0,
           lightness: 100.0
-        })
+        }
       )
     }
 
     #[test]
     fn black() {
       assert_eq!(
-        RgbColour {
+        HslColour::from(RgbColour {
           red: 0,
           green: 0,
           blue: 0
-        }
-        .to_hsl(),
-        Ok(HslColour {
+        }),
+        HslColour {
           hue: 0,
           saturation: 0.0,
           lightness: 0.0
-        })
+        }
       )
     }
   }
@@ -443,63 +460,60 @@ mod tests {
     #[test]
     fn reddish() {
       assert_eq!(
-        RgbColour {
+        LabColour::from(RgbColour {
           red: 244,
           green: 43,
           blue: 32
-        }
-        .to_lab(),
-        Ok(LabColour {
+        }),
+        LabColour {
           lightness: 53.020706,
           a: 72.232574,
           b: 55.97896
-        })
+        }
       )
     }
 
     #[test]
     fn rebeccapurple() {
       assert_eq!(
-        RgbColour::from_hex("663399").unwrap().to_lab(),
-        Ok(LabColour {
+        LabColour::from(RgbColour::from_hex("663399").unwrap()),
+        LabColour {
           lightness: 32.902435,
           a: 42.89223,
           b: -47.156937
-        })
+        }
       )
     }
 
     #[test]
     fn white() {
       assert_eq!(
-        RgbColour {
+        LabColour::from(RgbColour {
           red: 255,
           green: 255,
           blue: 255
-        }
-        .to_lab(),
-        Ok(LabColour {
+        }),
+        LabColour {
           lightness: 100.0,
           a: 0.0052452087,
           b: -0.010418892
-        })
+        }
       )
     }
 
     #[test]
     fn black() {
       assert_eq!(
-        RgbColour {
+        LabColour::from(RgbColour {
           red: 0,
           green: 0,
           blue: 0
-        }
-        .to_lab(),
-        Ok(LabColour {
+        }),
+        LabColour {
           lightness: 0.0,
           a: 0.0,
           b: 0.0
-        })
+        }
       )
     }
   }

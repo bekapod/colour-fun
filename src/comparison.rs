@@ -1,3 +1,5 @@
+use crate::colour::HslColour;
+use crate::colour::LabColour;
 use crate::colour::RgbColour;
 use wasm_bindgen::prelude::*;
 
@@ -40,26 +42,22 @@ impl Comparison {
 
   pub fn hsl(&self) -> ComparisonResult {
     let max = Comparison::euclidian_distance(
-      &RgbColour {
+      &HslColour::from(RgbColour {
         red: 255,
         green: 255,
         blue: 255,
-      }
-      .to_hsl()
-      .unwrap()
+      })
       .into(),
-      &RgbColour {
+      &HslColour::from(RgbColour {
         red: 0,
         green: 0,
         blue: 0,
-      }
-      .to_hsl()
-      .unwrap()
+      })
       .into(),
     );
     let actual = Comparison::euclidian_distance(
-      &self.a.to_hsl().unwrap().into(),
-      &self.b.to_hsl().unwrap().into(),
+      &HslColour::from(self.a).into(),
+      &HslColour::from(self.b).into(),
     );
     let percentage = Comparison::calculate_percentage(actual, max);
 
@@ -68,26 +66,22 @@ impl Comparison {
 
   pub fn lab(&self) -> ComparisonResult {
     let max = Comparison::delta_e(
-      &RgbColour {
+      &LabColour::from(RgbColour {
         red: 255,
         green: 255,
         blue: 255,
-      }
-      .to_lab()
-      .unwrap()
+      })
       .into(),
-      &RgbColour {
+      &LabColour::from(RgbColour {
         red: 0,
         green: 0,
         blue: 0,
-      }
-      .to_lab()
-      .unwrap()
+      })
       .into(),
     );
     let actual = Comparison::delta_e(
-      &self.a.to_lab().unwrap().into(),
-      &self.b.to_lab().unwrap().into(),
+      &LabColour::from(self.a).into(),
+      &LabColour::from(self.b).into(),
     );
     let percentage = Comparison::calculate_percentage(actual, max);
 
