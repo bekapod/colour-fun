@@ -6,6 +6,7 @@
 extern crate wasm_bindgen_test;
 use colour_fun::colour::*;
 use colour_fun::error_code::*;
+use wasm_bindgen::prelude::*;
 use wasm_bindgen_test::*;
 
 wasm_bindgen_test_configure!(run_in_browser);
@@ -13,7 +14,7 @@ wasm_bindgen_test_configure!(run_in_browser);
 #[wasm_bindgen_test]
 fn valid_white_is_hex_ffffff() {
     assert_eq!(
-        RgbColour::from_colour_name("white").unwrap().to_hex(),
+        String::from(RgbColour::from_colour_name("white").unwrap()),
         String::from("ffffff")
     )
 }
@@ -21,9 +22,7 @@ fn valid_white_is_hex_ffffff() {
 #[wasm_bindgen_test]
 fn valid_rebeccapurple_is_hex_663399() {
     assert_eq!(
-        RgbColour::from_colour_name("rebeccapurple")
-            .unwrap()
-            .to_hex(),
+        String::from(RgbColour::from_colour_name("rebeccapurple").unwrap()),
         String::from("663399")
     )
 }
@@ -31,7 +30,7 @@ fn valid_rebeccapurple_is_hex_663399() {
 #[wasm_bindgen_test]
 fn valid_yellow_is_hex_ffff00() {
     assert_eq!(
-        RgbColour::from_colour_name("yellow").unwrap().to_hex(),
+        String::from(RgbColour::from_colour_name("yellow").unwrap()),
         String::from("ffff00")
     )
 }
@@ -39,7 +38,7 @@ fn valid_yellow_is_hex_ffff00() {
 #[wasm_bindgen_test]
 fn valid_pink_is_hex_ffc0cb() {
     assert_eq!(
-        RgbColour::from_colour_name("pink").unwrap().to_hex(),
+        String::from(RgbColour::from_colour_name("pink").unwrap()),
         String::from("ffc0cb")
     )
 }
@@ -48,8 +47,8 @@ fn valid_pink_is_hex_ffc0cb() {
 fn invalid_rust_is_hex_invalid() {
     assert_eq!(
         RgbColour::from_colour_name("rust"),
-        Err(String::from(ErrorCode::InvalidColourName(
-            "rust".to_string()
+        Err(JsValue::from_str(&String::from(
+            ErrorCode::InvalidColourName("rust".to_string())
         )))
     )
 }

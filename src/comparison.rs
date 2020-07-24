@@ -14,9 +14,10 @@ pub struct Comparison {
   b: RgbColour,
 }
 
+#[wasm_bindgen]
 impl Comparison {
-  pub fn new(a: RgbColour, b: RgbColour) -> Comparison {
-    Comparison { a, b }
+  pub fn new(a: &RgbColour, b: &RgbColour) -> Comparison {
+    Comparison { a: *a, b: *b }
   }
 
   pub fn rgb(&self) -> ComparisonResult {
@@ -138,12 +139,12 @@ mod tests {
     fn comparison_1() {
       assert_eq!(
         Comparison::new(
-          RgbColour {
+          &RgbColour {
             red: 3,
             green: 43,
             blue: 234
           },
-          RgbColour {
+          &RgbColour {
             red: 43,
             green: 54,
             blue: 231
@@ -158,12 +159,12 @@ mod tests {
     fn comparison_2() {
       assert_eq!(
         Comparison::new(
-          RgbColour {
+          &RgbColour {
             red: 65,
             green: 123,
             blue: 165
           },
-          RgbColour {
+          &RgbColour {
             red: 87,
             green: 87,
             blue: 65
@@ -182,12 +183,12 @@ mod tests {
     fn comparison_1() {
       assert_eq!(
         Comparison::new(
-          RgbColour {
+          &RgbColour {
             red: 3,
             green: 43,
             blue: 234
           },
-          RgbColour {
+          &RgbColour {
             red: 43,
             green: 54,
             blue: 231
@@ -202,12 +203,12 @@ mod tests {
     fn comparison_2() {
       assert_eq!(
         Comparison::new(
-          RgbColour {
+          &RgbColour {
             red: 65,
             green: 123,
             blue: 165
           },
-          RgbColour {
+          &RgbColour {
             red: 87,
             green: 87,
             blue: 65
@@ -226,12 +227,12 @@ mod tests {
     fn comparison_1() {
       assert_eq!(
         Comparison::new(
-          RgbColour {
+          &RgbColour {
             red: 3,
             green: 43,
             blue: 234
           },
-          RgbColour {
+          &RgbColour {
             red: 43,
             green: 54,
             blue: 231
@@ -246,12 +247,12 @@ mod tests {
     fn comparison_2() {
       assert_eq!(
         Comparison::new(
-          RgbColour {
+          &RgbColour {
             red: 65,
             green: 123,
             blue: 165
           },
-          RgbColour {
+          &RgbColour {
             red: 87,
             green: 87,
             blue: 65

@@ -3,6 +3,7 @@ use std::convert::TryInto;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 
+#[wasm_bindgen]
 #[derive(Debug, PartialEq)]
 pub struct HslColour {
   hue: u32,
@@ -26,6 +27,7 @@ impl std::convert::From<RgbColour> for HslColour {
   }
 }
 
+#[wasm_bindgen]
 #[derive(Debug, PartialEq)]
 pub struct LabColour {
   lightness: f32,
@@ -57,12 +59,22 @@ pub struct RgbColour {
   pub blue: u8,
 }
 
+#[wasm_bindgen]
 impl RgbColour {
-  pub fn from_hex(hex: &str) -> Result<RgbColour, String> {
+  pub fn from_tuple(red: u8, green: u8, blue: u8) -> RgbColour {
+    RgbColour { red, green, blue }
+  }
+
+  pub fn from_hex(hex: &str) -> Result<RgbColour, JsValue> {
     if !is_valid_hex(hex) {
-      return Err(String::from(ErrorCode::InvalidHexCharacter(
-        hex.to_string(),
-      )));
+      return match hex.len() {
+        3 | 6 => Err(JsValue::from_str(&String::from(
+          ErrorCode::InvalidHexCharacter(hex.to_string()),
+        ))),
+        len => Err(JsValue::from_str(&String::from(
+          ErrorCode::InvalidHexLength(len),
+        ))),
+      };
     }
 
     match hex.len() {
@@ -84,19 +96,21 @@ impl RgbColour {
         );
         match parsed {
           (Ok(red), Ok(green), Ok(blue)) => Ok(RgbColour { red, green, blue }),
-          _ => Err(String::from(ErrorCode::InvalidHexCharacter(
-            hex.to_string(),
+          _ => Err(JsValue::from_str(&String::from(
+            ErrorCode::InvalidHexCharacter(hex.to_string()),
           ))),
         }
       }
-      length => Err(String::from(ErrorCode::InvalidHexLength(length))),
+      length => Err(JsValue::from_str(&String::from(
+        ErrorCode::InvalidHexLength(length),
+      ))),
     }
   }
 
-  pub fn from_colour_name(colour: &str) -> Result<RgbColour, String> {
+  pub fn from_colour_name(colour: &str) -> Result<RgbColour, JsValue> {
     if is_valid_colour_name(colour).is_err() | !is_valid_colour_name(colour).unwrap() {
-      return Err(String::from(ErrorCode::InvalidColourName(
-        colour.to_string(),
+      return Err(JsValue::from_str(&String::from(
+        ErrorCode::InvalidColourName(colour.to_string()),
       )));
     }
 
@@ -126,7 +140,7 @@ impl RgbColour {
           blue: data[2],
         })
       }
-      Err(_) => Err(String::from(ErrorCode::CanvasError)),
+      Err(_) => Err(JsValue::from_str(&String::from(ErrorCode::CanvasError))),
     }
   }
 
@@ -151,7 +165,7 @@ impl RgbColour {
     format!("{:02x}{:02x}{:02x}", self.red, self.green, self.blue)
   }
 
-  pub fn to_hsl(&self) -> Result<HslColour, String> {
+  pub fn to_hsl(&self) -> Result<HslColour, JsValue> {
     let red = self.red as f32 / 255.0;
     let green = self.green as f32 / 255.0;
     let blue = self.blue as f32 / 255.0;
@@ -208,10 +222,9 @@ impl RgbColour {
         saturation,
         lightness,
       }),
-      Err(_) => Err(String::from(ErrorCode::HslConversionError(format!(
-        "{:?}",
-        self
-      )))),
+      Err(_) => Err(JsValue::from_str(&String::from(
+        ErrorCode::HslConversionError(format!("{:?}", self)),
+      ))),
     }
   }
 
@@ -248,22 +261,33 @@ impl RgbColour {
   }
 }
 
-impl std::convert::Into<(f32, f32, f32)> for RgbColour {
-  fn into(self) -> (f32, f32, f32) {
-    (self.red as f32, self.green as f32, self.blue as f32)
+impl std::convert::From<RgbColour> for (f32, f32, f32) {
+  fn from(colour: RgbColour) -> Self {
+    (colour.red as f32, colour.green as f32, colour.blue as f32)
   }
 }
 
-fn is_valid_hex(hex: &str) -> bool {
-  if hex.is_empty() {
-    return false;
+impl std::convert::From<&str> for RgbColour {
+  fn from(value: &str) -> RgbColour {
+    let default = RgbColour {
+      red: 0,
+      green: 0,
+      blue: 0,
+    };
+    if is_valid_hex(value) {
+      RgbColour::from_hex(value).unwrap_or(default)
+    } else if is_valid_colour_name(value).unwrap_or(false) {
+      RgbColour::from_colour_name(value).unwrap_or(default)
+    } else {
+      default
+    }
   }
+}
 
-  if hex.starts_with('#') {
-    return is_valid_hex(&hex[1..]);
+impl std::convert::From<RgbColour> for String {
+  fn from(colour: RgbColour) -> Self {
+    colour.to_hex()
   }
-
-  u32::from_str_radix(hex, 16).is_ok()
 }
 
 #[wasm_bindgen]
@@ -279,6 +303,24 @@ pub fn is_valid_colour(color: &str) -> bool {
 
 fn hex_pair_to_int(a: char, b: char) -> Result<u8, std::num::ParseIntError> {
   u8::from_str_radix(&format!("{}{}", a, b), 16)
+}
+
+#[wasm_bindgen]
+pub fn is_valid_hex(hex: &str) -> bool {
+  if hex.is_empty() {
+    return false;
+  }
+
+  let mut unprefixed = hex;
+
+  if hex.starts_with('#') {
+    unprefixed = &hex[1..];
+  }
+
+  match unprefixed.len() {
+    3 | 6 => u32::from_str_radix(unprefixed, 16).is_ok(),
+    _ => false,
+  }
 }
 
 fn is_valid_colour_name(colour: &str) -> Result<bool, JsValue> {
@@ -372,21 +414,67 @@ mod tests {
     }
 
     #[test]
+    #[should_panic(expected = "function not implemented on non-wasm32 targets")]
     fn invalid_char() {
       assert_eq!(
         RgbColour::from_hex("F43C8X"),
-        Err(String::from(ErrorCode::InvalidHexCharacter(
-          "F43C8X".to_string()
+        Err(JsValue::from_str(&String::from(
+          ErrorCode::InvalidHexCharacter("F43C8X".to_string())
         )))
       );
     }
 
     #[test]
+    #[should_panic(expected = "function not implemented on non-wasm32 targets")]
     fn invalid_length() {
       assert_eq!(
         RgbColour::from_hex("F43C"),
-        Err(String::from(ErrorCode::InvalidHexLength(4)))
+        Err(JsValue::from_str(&String::from(
+          ErrorCode::InvalidHexLength(4)
+        )))
       );
+    }
+  }
+
+  mod rgb_from_string {
+    use super::*;
+
+    #[test]
+    fn six_char() {
+      assert_eq!(
+        RgbColour::from("F43C8E"),
+        RgbColour {
+          red: 244,
+          green: 60,
+          blue: 142
+        }
+      );
+    }
+
+    #[test]
+    fn three_char() {
+      assert_eq!(
+        RgbColour::from("d15"),
+        RgbColour {
+          red: 221,
+          green: 17,
+          blue: 85
+        }
+      );
+    }
+
+    #[test]
+    #[should_panic(expected = "cannot call wasm-bindgen imported functions on non-wasm targets")]
+    fn invalid_char() {
+      // should panic because converter will attempt to parse as css colour name
+      RgbColour::from("F43C8X");
+    }
+
+    #[test]
+    #[should_panic(expected = "cannot call wasm-bindgen imported functions on non-wasm targets")]
+    fn invalid_length() {
+      // should panic because converter will attempt to parse as css colour name
+      RgbColour::from("F43C");
     }
   }
 
@@ -412,7 +500,7 @@ mod tests {
     #[test]
     fn rebeccapurple() {
       assert_eq!(
-        HslColour::from(RgbColour::from_hex("663399").unwrap()),
+        HslColour::from(RgbColour::from("663399")),
         HslColour {
           hue: 270,
           saturation: 50.000008,
@@ -476,7 +564,7 @@ mod tests {
     #[test]
     fn rebeccapurple() {
       assert_eq!(
-        LabColour::from(RgbColour::from_hex("663399").unwrap()),
+        LabColour::from(RgbColour::from("663399")),
         LabColour {
           lightness: 32.902435,
           a: 42.89223,
@@ -524,7 +612,7 @@ mod tests {
     #[test]
     fn dark_colour() {
       assert_eq!(
-        RgbColour::from_hex("054").unwrap().get_contrasting_colour(),
+        RgbColour::from("054").get_contrasting_colour(),
         RgbColour {
           red: 255,
           green: 255,
@@ -536,7 +624,7 @@ mod tests {
     #[test]
     fn light_colour() {
       assert_eq!(
-        RgbColour::from_hex("f54").unwrap().get_contrasting_colour(),
+        RgbColour::from("f54").get_contrasting_colour(),
         RgbColour {
           red: 0,
           green: 0,
