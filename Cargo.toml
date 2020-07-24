@@ -1,7 +1,9 @@
 [package]
 name = "colour-fun"
-version = "0.1.0"
-authors = ["Becky <bckyjns@gmail.com>"]
+version = "0.1.1"
+authors = ["Becky (https://twitter.com/bekapod)"]
+repository = "https://github.com/bekapod/colour-fun.git"
+license = "MIT/Apache-2.0"
 edition = "2018"
 
 [lib]
