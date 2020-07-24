@@ -2,7 +2,7 @@ name: Rust
 
 on:
   push:
-    branches: [ next ]
+    branches: [ next, latest ]
   pull_request:
     branches: [ next ]
 
