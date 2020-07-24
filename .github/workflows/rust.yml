@@ -24,4 +24,4 @@ jobs:
     - name: Run tests
       run: cargo test
     - name: Run integration tests
-      run: wasm-pack test --headless --chrome --firefox --safari
+      run: wasm-pack test --headless --chrome --firefox
